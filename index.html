@@ -1,1 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>my gaming achievements</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow: auto;
+      position: relative;
+    }
+    .container {
+      max-width: 1200px;
+      width: 90%;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .tab-button {
+      background: #1a1a1a;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      padding: 0.3rem 0.8rem;
+      margin: 0 0.3rem;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      text-transform: lowercase;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .tab-button:hover {
+      background: #333333;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    .tab-button.active {
+      background: #333333;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+    .tab-content {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .tab-content.slide-in {
+      transform: translateX(20px);
+    }
+    .achievements-container {
+      position: relative;
+      height: 100vh;
+    }
+    .achievement-card {
+      background: #000000;
+      border: 1px solid #ffffff;
+      border-radius: 0;
+      padding: 1rem;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+      width: 250px;
+      height: 250px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .achievement-card:hover {
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+    }
+    .achievement-card h3 {
+      margin: 0 0 0.3rem;
+      color: #ffffff;
+      font-size: 1rem;
+      text-transform: lowercase;
+      font-weight: normal;
+    }
+    .achievement-card p {
+      margin: 0.3rem 0;
+      font-size: 0.8rem;
+      color: #cccccc;
+      text-transform: lowercase;
+    }
+    .achievement-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 0;
+      cursor: pointer;
+    }
+    .fullscreen-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .fullscreen-modal.active {
+      display: flex;
+    }
+    .fullscreen-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    .fullscreen-modal .close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: #ffffff;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    @media (max-width: 600px) {
+      .tab-button {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+      }
+      .achievement-card {
+        width: 200px;
+        height: 200px;
+        padding: 0.8rem;
+      }
+      .achievement-card img {
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-button active" data-tab="dbd">dead by daylight</button>
+      <button class="tab-button" data-tab="gd">geometry dash</button>
+      <button class="tab-button" data-tab="osu">osu!mania</button>
+      <button class="tab-button" data-tab="other">other games</button>
+    </div>
+    <div id="dbd" class="tab-content active">
+      <div class="achievements-container" id="dbd-achievements"></div>
+    </div>
+    <div id="gd" class="tab-content">
+      <div class="achievements-container" id="gd-achievements"></div>
+    </div>
+    <div id="osu" class="tab-content">
+      <div class="achievements-container" id="osu-achievements"></div>
+    </div>
+    <div id="other" class="tab-content">
+      <div class="achievements-container" id="other-achievements"></div>
+    </div>
+  </div>
+  <div class="fullscreen-modal" id="fullscreen-modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img id="fullscreen-image" src="" alt="Fullscreen image">
+  </div>
+  <canvas id="snow-canvas"></canvas>
+  <audio id="background-music" loop autoplay>
+    <source src="https://drive.google.com/uc?export=download&id=1HFmznxNkOT4P2vu8uVAlemATCTu2F2I8" type="audio/mpeg">
+    your browser does not support the audio element.
+  </audio>
+  <script>
+    // Animated tab title
+    const titleText = "my gaming achievements";
+    let titleIndex = 0;
+    let direction = 1;
+    function animateTitle() {
+      document.title = titleText.slice(0, titleIndex) + "|";
+      titleIndex += direction;
+      if (titleIndex >= titleText.length + 1 || titleIndex <= 0) {
+        direction *= -1;
+      }
+      setTimeout(animateTitle, 200);
+    }
+    animateTitle();
 
+    // Sample achievements data (replace with your own)
+    const achievements = {
+      dbd: [
+        {
+          title: "p100 wraith",
+          date: "2024-05-10",
+          image: "https://via.placeholder.com/250x150?text=p100+wraith"
+        },
+        {
+          title: "adept nurse",
+          date: "2024-07-20",
+          image: "https://via.placeholder.com/250x150?text=adept+nurse"
+        }
+      ],
+      gd: [
+        {
+          title: "electroman adventures",
+          date: "2023-11-15",
+          image: "https://via.placeholder.com/250x150?text=electroman+adventures"
+        },
+        {
+          title: "1000 stars",
+          date: "2024-03-05",
+          image: "https://via.placeholder.com/250x150?text=1000+stars"
+        }
+      ],
+      osu: [
+        {
+          title: "7-star fc",
+          date: "2024-01-12",
+          image: "https://via.placeholder.com/250x150?text=7-star+fc"
+        },
+        {
+          title: "50 s ranks",
+          date: "2024-06-30",
+          image: "https://via.placeholder.com/250x150?text=50+s+ranks"
+        }
+      ],
+      other: [
+        {
+          title: "misc achievement",
+          date: "2025-01-01",
+          image: "https://via.placeholder.com/250x150?text=misc+achievement"
+        }
+      ]
+    };
+
+    // Function to populate achievements for a specific tab
+    function displayAchievements(tabId) {
+      const container = document.getElementById(`${tabId}-achievements`);
+      container.innerHTML = ''; // Clear existing content
+      achievements[tabId].forEach((achievement) => {
+        const card = document.createElement('div');
+        card.className = 'achievement-card';
+        card.innerHTML = `
+          <img src="${achievement.image}" alt="${achievement.title}" onclick="openModal('${achievement.image}')">
+          <h3>${achievement.title}</h3>
+          <p>${achievement.date}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Tab switching logic with fade-in/slide animation
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        const tabId = button.getAttribute('data-tab');
+        const content = document.getElementById(tabId);
+        content.classList.add('slide-in');
+        setTimeout(() => {
+          content.classList.add('active');
+          content.classList.remove('slide-in');
+        }, 0); // Trigger animation
+        displayAchievements(tabId);
+      });
+    });
+
+    // Initialize the first tab
+    document.addEventListener('DOMContentLoaded', () => {
+      displayAchievements('dbd');
+    });
+
+    // Fullscreen modal functions
+    function openModal(src) {
+      const modal = document.getElementById('fullscreen-modal');
+      const img = document.getElementById('fullscreen-image');
+      img.src = src;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('fullscreen-modal');
+      modal.classList.remove('active');
+    }
+
+    // Snow effect with smoother parallax
+    const canvas = document.getElementById('snow-canvas');
+    const ctx = canvas.getContext('2d');
+    let mouseX = 0, mouseY = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const snowflakes = [];
+    for (let i = 0; i < 300; i++) {
+      snowflakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 3 + 1,
+        speed: Math.random() * 0.1 + 0.1,
+        angle: Math.random() * Math.PI * 2
+      });
+    }
+
+    function drawSnow() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      snowflakes.forEach(flake => {
+        const dx = (mouseX - canvas.width / 2) / 300;
+        const dy = (mouseY - canvas.height / 2) / 300;
+        flake.y += flake.speed;
+        flake.x += Math.sin(flake.angle) * 0.3 + dx;
+        flake.angle += 0.02;
+        if (flake.y > canvas.height) flake.y = 0;
+        if (flake.x > canvas.width) flake.x = 0;
+        if (flake.x < 0) flake.x = canvas.width;
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      requestAnimationFrame(drawSnow);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    // Initialize mouse position off-screen
+    mouseX = canvas.width / 2;
+    mouseY = canvas.height / 2;
+    drawSnow();
+
+    // Handle autoplay restrictions
+    document.addEventListener('click', () => {
+      const audio = document.getElementById('background-music');
+      if (audio.paused) {
+        audio.play().catch(e => console.log('Autoplay blocked:', e));
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>
