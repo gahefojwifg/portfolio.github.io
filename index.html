@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>my gaming achievements</title>
+  <title>iq test</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -182,10 +182,10 @@
 <body>
   <div class="container">
     <div class="tabs">
-      <button class="tab-button active" data-tab="dbd">dead by daylight</button>
-      <button class="tab-button" data-tab="gd">geometry dash</button>
-      <button class="tab-button" data-tab="osu">osu!mania</button>
-      <button class="tab-button" data-tab="other">other games</button>
+      <button class="tab-button active" data-tab="dbd">dbd</button>
+      <button class="tab-button" data-tab="gd">gd</button>
+      <button class="tab-button" data-tab="osu">mania</button>
+      <button class="tab-button" data-tab="other">etc</button>
     </div>
     <div id="dbd" class="tab-content active">
       <div class="achievements-container" id="dbd-achievements"></div>
@@ -207,12 +207,11 @@
   <button class="audio-control" id="audio-control">pause music</button>
   <canvas id="snow-canvas"></canvas>
   <audio id="background-music" loop autoplay>
-    <source src="https://drive.google.com/uc?export=download&id=1HFmznxNkOT4P2vu8uVAlemATCTu2F2I8" type="audio/mpeg">
-    your browser does not support the audio element.
+    <source src="music.mp3" type="audio/mpeg">
   </audio>
   <script>
     // Animated tab title
-    const titleText = "my gaming achievements";
+    const titleText = "iq test";
     let titleIndex = 0;
     let direction = 1;
     function animateTitle() {
@@ -368,27 +367,7 @@
     mouseX = canvas.width / 2;
     mouseY = canvas.height / 2;
     drawSnow();
-
-    // Audio control
-    const audio = document.getElementById('background-music');
-    const audioControl = document.getElementById('audio-control');
-    audioControl.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play().catch(e => console.log('Play blocked:', e));
-        audioControl.textContent = 'pause music';
-      } else {
-        audio.pause();
-        audioControl.textContent = 'play music';
-      }
-    });
-
-    // Handle autoplay restrictions
-    document.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play().catch(e => console.log('Autoplay blocked:', e));
-        audioControl.textContent = 'pause music';
-      }
-    }, { once: true });
+    
   </script>
 </body>
 </html>
